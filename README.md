@@ -1,5 +1,7 @@
 # 📝 Decentralized Notes - A Simple Blockchain Note Storage DApp
 
+<img width="1919" height="908" alt="Screenshot 2025-10-29 143519" src="https://github.com/user-attachments/assets/11989042-f7e4-48f0-a105-4a067abb5887" />
+
 ### 🚀 Deployed Smart Contract  
 **Network:** Celo Sepolia Testnet  
 **Transaction / Deployment Link:** [View on Blockscout](https://celo-sepolia.blockscout.com/tx/0x9ed3c86797aae3d4d53127033166ce2ef203263bc5f4c916e543f0aa1c2601ad)
