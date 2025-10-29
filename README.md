@@ -1,54 +1,39 @@
-# 🗳 Transparent On-Chain Polling System
+# 📝 Decentralized Notes - A Simple Blockchain Note Storage DApp
 
-A simple and transparent *on-chain voting system* built using *Solidity*.  
-This project enables users to *create polls, **vote, and **view real-time results* — all recorded immutably on the blockchain for full transparency.
+### 🚀 Deployed Smart Contract  
+**Network:** Celo Sepolia Testnet  
+**Transaction / Deployment Link:** [View on Blockscout](https://celo-sepolia.blockscout.com/tx/0x9ed3c86797aae3d4d53127033166ce2ef203263bc5f4c916e543f0aa1c2601ad)
 
 ---
 
+## 📖 Project Description
 
-<img width="1903" height="972" alt="Screenshot 2025-10-29 142435" src="https://github.com/user-attachments/assets/58e93349-0169-4821-9606-560e56de6f4a" />
+**Decentralized Notes** is a simple smart contract written in Solidity that allows anyone to **store, retrieve, and manage their personal notes directly on the blockchain**.  
+Instead of relying on centralized servers or apps, this DApp ensures your notes are **secure, censorship-resistant, and always accessible** through your wallet address.
 
-
-
-
-
-## 📘 Project Description
-
-The *Transparent On-Chain Polling System* is a beginner-friendly Solidity smart contract designed to demonstrate how decentralized polling works.  
-It ensures every vote is:
-- Secure ✅  
-- Transparent 🧠  
-- Immutable 🔒  
-
-Poll creators can launch questions with multiple options, and participants can vote directly on-chain using their wallet. The contract prevents double voting and allows everyone to see the results.
+It’s designed as a **beginner-friendly blockchain project** — perfect for learning how smart contracts work with mappings, events, and state variables in Solidity.
 
 ---
 
 ## 💡 What It Does
 
-- 🗳 *Creates polls* with multiple choice options  
-- 👥 *Allows users to vote* only once per poll  
-- ⏰ *Sets a duration* for polls (end time)  
-- 📊 *Displays live results* transparently  
-- 💬 *Emits events* for every new poll and vote for better tracking  
+- Lets users **add** new notes to the blockchain.  
+- Allows users to **view all their notes** at any time.  
+- Enables fetching a **specific note by index**.  
+- Keeps notes **private to the wallet address** that created them.  
+- Stores all data **permanently and immutably** on the blockchain.
 
 ---
 
 ## ✨ Features
 
-- *Anyone can create a poll* — no admin restrictions  
-- *Open and transparent voting* on-chain  
-- *Prevents double voting* using wallet address checks  
-- *Smart contract emits events* for auditability  
-- *Simple, gas-efficient, and beginner-friendly Solidity code*  
-
----
-
-## 🚀 Deployed Smart Contract
-
-*Network:* CELO (Testnet – Celo Sepolia)  
-*Contract Deployment Transaction:*  
-🔗 [View on BlockScout](https://celo-sepolia.blockscout.com/tx/0x6fbea569ca3a2ce06e32bf713fdbed8fb28b055d6a97025a973470301ae2b643)
+| Feature | Description |
+|----------|-------------|
+| 🧠 **Personal Notes** | Each wallet address can store its own private list of notes. |
+| 🔒 **Privacy** | Notes are stored in a mapping tied to the sender’s address — only the note owner can view them. |
+| ⚡ **Fast & Simple** | Lightweight design using Solidity’s mapping and array structures. |
+| 🏷️ **Events** | Emits a `NoteAdded` event every time a new note is created. |
+| 🧱 **Immutable Storage** | Once added, notes remain permanently recorded on the blockchain. |
 
 ---
 
@@ -56,84 +41,40 @@ Poll creators can launch questions with multiple options, and participants can v
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
-/// @title Transparent On-Chain Polling System
-/// @author ...
-/// @notice A simple public polling contract where anyone can create polls and vote transparently.
-contract PollSystem {
-    struct Poll {
-        string question;             // Poll question
-        string[] options;            // Options available for voting
-        mapping(uint => uint) votes; // votes[optionIndex] = voteCount
-        mapping(address => bool) voted; // Prevent double voting
-        uint endTime;                // Poll end time (timestamp)
-        bool exists;                 // Check if poll exists
+/*
+ * @title Decentralized Note Storage
+ * @dev A simple contract to let users store and retrieve their own notes on the blockchain.
+ */
+
+contract DecentralizedNotes {
+    // Each user's address maps to an array of notes they’ve created
+    mapping(address => string[]) private userNotes;
+
+    // Event emitted when a new note is added
+    event NoteAdded(address indexed user, string note);
+
+    // Function to add a note
+    function addNote(string memory _note) public {
+        require(bytes(_note).length > 0, "Note cannot be empty");
+        userNotes[msg.sender].push(_note);
+        emit NoteAdded(msg.sender, _note);
     }
 
-    uint public pollCount;
-    mapping(uint => Poll) public polls;
-
-    event PollCreated(uint pollId, string question, uint endTime);
-    event Voted(uint pollId, address voter, uint optionIndex);
-
-    /// @notice Create a new poll with multiple options
-    /// @param _question The question of the poll
-    /// @param _options The list of options to choose from
-    /// @param _durationSeconds Duration for the poll in seconds
-    function createPoll(
-        string memory _question,
-        string[] memory _options,
-        uint _durationSeconds
-    ) public {
-        require(_options.length >= 2, "Need at least 2 options");
-
-        pollCount++;
-        Poll storage p = polls[pollCount];
-        p.question = _question;
-        p.options = _options;
-        p.endTime = block.timestamp + _durationSeconds;
-        p.exists = true;
-
-        emit PollCreated(pollCount, _question, p.endTime);
+    // Function to get all notes of the sender
+    function getMyNotes() public view returns (string[] memory) {
+        return userNotes[msg.sender];
     }
 
-    /// @notice Vote for an option in a poll
-    /// @param _pollId The poll ID
-    /// @param _optionIndex The index of the option to vote for
-    function vote(uint _pollId, uint _optionIndex) public {
-        Poll storage p = polls[_pollId];
-        require(p.exists, "Poll does not exist");
-        require(block.timestamp < p.endTime, "Poll has ended");
-        require(!p.voted[msg.sender], "Already voted");
-        require(_optionIndex < p.options.length, "Invalid option index");
-
-        p.votes[_optionIndex]++;
-        p.voted[msg.sender] = true;
-
-        emit Voted(_pollId, msg.sender, _optionIndex);
+    // Function to get a specific note by index
+    function getMyNoteByIndex(uint index) public view returns (string memory) {
+        require(index < userNotes[msg.sender].length, "Invalid index");
+        return userNotes[msg.sender][index];
     }
 
-    /// @notice Get poll details (without vote counts)
-    function getPoll(uint _pollId) public view returns (
-        string memory question,
-        string[] memory options,
-        uint endTime
-    ) {
-        Poll storage p = polls[_pollId];
-        return (p.question, p.options, p.endTime);
-    }
-
-    /// @notice Get results (vote counts) for a poll
-    function getResults(uint _pollId) public view returns (uint[] memory results) {
-        Poll storage p = polls[_pollId];
-        uint optionCount = p.options.length;
-        results = new uint[](optionCount);
-        for (uint i = 0; i < optionCount; i++) {
-            results[i] = p.votes[i];
-        }
-        return results;
+    // Function to get the count of notes for the sender
+    function getMyNotesCount() public view returns (uint) {
+        return userNotes[msg.sender].length;
     }
 }
-# smartcontract
-# decenternote
